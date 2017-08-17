@@ -2,29 +2,29 @@
 
 ;(function(){
 
-	// intervals in minutes
-	var shortInterval = 1;
+	// intervals for work in minutes
+	var shortInterval = 2;
 	// calc interval in milliseconds
-	shortInterval = shortInterval * 1000;
+	shortInterval = shortInterval * 60000;
+
+	// work pause interval
+	var pauseInterval = 60000;
+
+	// short timer
+	var shortTimer;
+
 	// time of start day
 	var currentTime;
 
 	// set current Date/Time
 	function currentTime(){
+
 		var timeFull = new Date();
 		var time = {
 			"hours": timeFull.getHours(),
 			"minutes": timeFull.getMinutes()
 		}
 		return time;
-	}
-
-	// short timer (eye rest)
-	function eyeRestTimer (currentTime, shortInterval){
-
-		setTimeout(function() { 
-			console.log('start timer');
-		}, shortInterval);
 
 	}
 
@@ -38,33 +38,61 @@
 	    var permission = Notification.permission;
 
 	    if (permission === 'default') {
-			console.log("def", result, "+",  Notification.permission); 
 			title.textContent = "The permission request was dismissed.";
 			return;
 		}
 
 		if (permission === 'denied') {
-			console.log("den", result, "+", Notification.permission); 
 			title.textContent = "Permission wasn\'t granted. Allow a retry.";
 			return;
 		}
 
 		if (permission === 'granted') {
-			console.log("gran", result, "+", Notification.permission);
 			startNotify()
 		}
 		
 	}
 
 	function startNotify(){
-		console.log("granted", "+",  Notification.permission); 
+
 		// remove start button
-		document.querySelector("#check").remove();
-	  	//start notify
-	  	console.log('test');
-	  	var notification = new Notification("Hi there!");
+		document.querySelector("#check").remove();	  	
 	  	document.querySelector("#config").remove();
 	  	document.querySelector("#day").classList.remove('hide');
+
+	}
+
+	// short timer (need eye rest)
+	function eyeRestTimer (shortInterval){
+
+		console.log('start timer');
+
+		shortTimer = setTimeout(function() { 
+			console.log('finish timer');
+			new Notification("You need to rest for eyes!");
+			document.querySelector("#short-pause").classList.remove('hide');
+		}, shortInterval);
+
+	}
+
+	// rest timer (pause in work)
+	function pauseTimer (interval){
+
+		document.querySelector("#work-wrapper").classList.add('hide');
+
+		console.log('start pause');
+
+		setTimeout(function() { 
+			console.log('finish pause');
+			new Notification("You can start work :)");
+			document.querySelector("#short-pause").classList.add('hide');
+			document.querySelector("#work-wrapper").classList.remove('hide');
+
+			// start short timer
+			eyeRestTimer(shortInterval);
+
+		}, interval);
+
 	}
 
 	// start check config
@@ -97,22 +125,33 @@
 
 			startNotify()
 
-		}
-		
+		}	
+
 	});
 	// end check config
 
 	//start day
 	document.querySelector("#start-day").addEventListener("click", function(){
+
 		//remove start messages
 		document.querySelector("#before-work-wrapper").remove();
 
-		//set time of start day
-		currentTime = currentTime();
-
 		// start short timer
-		eyeRestTimer(currentTime, shortInterval);
-		console.log(Notification.permission);
+		eyeRestTimer(shortInterval);
+
+	});
+
+	//start short pause in work
+	document.querySelector("#pause").addEventListener("click", function(){
+
+		//hide pause messages
+		document.querySelector("#short-pause").classList.add('hide');
+
+		// stop short timer
+		clearInterval(shortTimer);	
+
+		pauseTimer(pauseInterval)
+
 	});
 
 }) ();
